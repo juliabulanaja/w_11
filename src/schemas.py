@@ -1,6 +1,6 @@
 from datetime import datetime, date
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, EmailStr
 
 
 class ContactModel(BaseModel):
@@ -44,6 +44,7 @@ class UserDb(BaseModel):
     username: str
     email: str
     created_at: datetime
+    avatar: str
 
     class Config:
         from_attributes = True
@@ -58,3 +59,7 @@ class TokenModel(BaseModel):
     access_token: str
     refresh_token: str
     token_type: str = "bearer"
+
+
+class RequestEmail(BaseModel):
+    email: EmailStr

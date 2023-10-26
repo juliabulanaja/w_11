@@ -16,6 +16,8 @@ class User(Base):
     password = Column(String(255), nullable=False)
     created_at = Column('crated_at', DateTime, default=func.now())
     refresh_token = Column(String(255), nullable=True)
+    confirmed = Column(Boolean, default=False)
+    avatar = Column(String(255), nullable=True)
 
 
 class Contact(Base):
