@@ -1,6 +1,8 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import ValidationError
 
+import os
+
 
 class Settings(BaseSettings):
     mail_username: str
@@ -21,7 +23,8 @@ class Settings(BaseSettings):
     cloudinary_name: str
     cloudinary_api_key: str
     cloudinary_api_secret: str
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+    # model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+    model_config = SettingsConfigDict(env_file=f"{os.path.dirname(os.path.abspath(__file__))}/../../.env", env_file_encoding="utf-8")
 
 try:
     settings = Settings()

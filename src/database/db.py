@@ -11,6 +11,10 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # Dependency
 def get_db():
+    """Initialize new session.
+
+    :yield: New session
+    """    
     db = SessionLocal()
     try:
         yield db

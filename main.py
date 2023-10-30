@@ -27,7 +27,11 @@ app.add_middleware(
 )
 
 @app.on_event("startup")
-async def startup():
+async def startup() -> None: 
+    """Initialize connection with redis db.
+    :return: None.
+    :rtype: None
+    """       
     r = await redis.Redis(host=settings.redis_host, port=settings.redis_port, db=0, encoding="utf-8",
                           decode_responses=True)
     await FastAPILimiter.init(r)
@@ -35,4 +39,9 @@ async def startup():
 
 @app.get("/")
 def root():
+    """Initialize root endpoint.
+
+    :return: Object with message
+    :rtype: dict
+    """    
     return {"message": "Welcome to FastAPI!"}

@@ -24,7 +24,21 @@ security = HTTPBearer()
              response_model=UserResponse, 
              status_code=status.HTTP_201_CREATED
              )
-async def signup(body: UserModel, background_tasks: BackgroundTasks, request: Request, db: Session = Depends(get_db)):
+async def signup(body: UserModel, background_tasks: BackgroundTasks, request: Request, db: Session = Depends(get_db)) -> dict:
+    """Initialize db query to create new user.
+
+    :param body: Data for creating new user.
+    :type body: UserModel
+    :param background_tasks: BackgroundTasks to sent email background.
+    :type background_tasks: BackgroundTasks
+    :param request: Request to get url from.
+    :type request: Request
+    :param db: The database session, defaults to Depends(get_db)
+    :type db: Session, optional
+    :raises HTTPException: If user with such email already exists.
+    :return: Dictionary with newly created user and message.
+    :rtype: dict
+    """    
     exist_user = await repository_users.get_user_by_email(body.email, db)
     if exist_user:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Account already exists")
@@ -38,7 +52,19 @@ async def signup(body: UserModel, background_tasks: BackgroundTasks, request: Re
              response_model=TokenModel, 
              dependencies=[Depends(RateLimiter(times=10, seconds=60))]
              )
-async def login(body: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+async def login(body: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)) -> dict:
+    """Initialize db query to login user with specific data.
+
+    :param body: Credentials data to login usesr, defaults to Depends()
+    :type body: OAuth2PasswordRequestForm, optional
+    :param db: The database session, defaults to Depends(get_db)
+    :type db: Session, optional
+    :raises HTTPException: If user with such email does not exist.
+    :raises HTTPException: If user has not confirmed his email.
+    :raises HTTPException: If passwird is not correct.
+    :return: Dictionary with access_token, refresh_token and token_type.
+    :rtype: dict
+    """    
     user = await repository_users.get_user_by_email(body.username, db)
     if user is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email")
@@ -58,7 +84,17 @@ async def login(body: OAuth2PasswordRequestForm = Depends(), db: Session = Depen
             response_model=TokenModel,
             dependencies=[Depends(RateLimiter(times=10, seconds=60))]
             )
-async def refresh_token(credentials: HTTPAuthorizationCredentials = Security(security), db: Session = Depends(get_db)):
+async def refresh_token(credentials: HTTPAuthorizationCredentials = Security(security), db: Session = Depends(get_db)) -> dict:
+    """Refresh token for specific user.
+
+    :param credentials: Credentials to update token, defaults to Security(security)
+    :type credentials: HTTPAuthorizationCredentials, optional
+    :param db: The database session, defaults to Depends(get_db)
+    :type db: Session, optional
+    :raises HTTPException: If user's refresh_token is not equal token from request.
+    :return: Dictionary with access_token, refresh_token and token_type.
+    :rtype: dict
+    """    
     token = credentials.credentials
     email = await auth_service.decode_refresh_token(token)
     user = await repository_users.get_user_by_email(email, db)
@@ -75,7 +111,17 @@ async def refresh_token(credentials: HTTPAuthorizationCredentials = Security(sec
 @router.get('/confirmed_email/{token}',
             dependencies=[Depends(RateLimiter(times=10, seconds=60))]
             )
-async def confirmed_email(token: str, db: Session = Depends(get_db)):
+async def confirmed_email(token: str, db: Session = Depends(get_db)) -> dict:
+    """Confirmes email in user profile.
+
+    :param token: Token to confirm email.
+    :type token: str
+    :param db: The database session, defaults to Depends(get_db).
+    :type db: Session, optional
+    :raises HTTPException: If user with such email does not exist.
+    :return: Dictionary with message.
+    :rtype: dict
+    """    
     email = await auth_service.get_email_from_token(token)
     user = await repository_users.get_user_by_email(email, db)
     if user is None:
@@ -90,7 +136,20 @@ async def confirmed_email(token: str, db: Session = Depends(get_db)):
              dependencies=[Depends(RateLimiter(times=10, seconds=60))]
              )
 async def request_email(body: RequestEmail, background_tasks: BackgroundTasks, request: Request,
-                        db: Session = Depends(get_db)):
+                        db: Session = Depends(get_db)) -> dict:
+    """Sends email for email confirmation.
+
+    :param body: Email to confirm.
+    :type body: RequestEmail
+    :param background_tasks: BackgroundTasks to sent email background.
+    :type background_tasks: BackgroundTasks
+    :param request: Request to get url from.
+    :type request: Request
+    :param db: The database session, defaults to Depends(get_db)
+    :type db: Session, optional
+    :return: Dictionary with message.
+    :rtype: dict
+    """    
     user = await repository_users.get_user_by_email(body.email, db)
 
     if user.confirmed:
@@ -101,13 +160,31 @@ async def request_email(body: RequestEmail, background_tasks: BackgroundTasks, r
 
 
 @router.get("/me/", response_model=UserDb)
-async def read_users_me(current_user: User = Depends(auth_service.get_current_user)):
+async def read_users_me(current_user: User = Depends(auth_service.get_current_user)) -> User:
+    """Gets information about user.
+
+    :param current_user: User to get information about, defaults to Depends(auth_service.get_current_user)
+    :type current_user: User, optional
+    :return: User.
+    :rtype: User
+    """    
     return current_user
 
 
 @router.patch('/avatar', response_model=UserDb)
 async def update_avatar_user(file: UploadFile = File(), current_user: User = Depends(auth_service.get_current_user),
-                             db: Session = Depends(get_db)):
+                             db: Session = Depends(get_db)) -> User:
+    """Initialize db query to update user's avatar.
+
+    :param file: File to update, defaults to File()
+    :type file: UploadFile, optional
+    :param current_user: User to avatar update, defaults to Depends(auth_service.get_current_user)
+    :type current_user: User, optional
+    :param db: The database session, defaults to Depends(get_db)
+    :type db: Session, optional
+    :return: User with updated avatar.
+    :rtype: User
+    """     
     cloudinary.config(
         cloud_name=settings.cloudinary_name,
         api_key=settings.cloudinary_api_key,
