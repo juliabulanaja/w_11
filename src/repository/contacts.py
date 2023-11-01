@@ -18,8 +18,8 @@ async def get_contacts(db: Session, user: User) -> List[Contact]:
     :type user: User
     :return: List of user's contacts.
     :rtype: List[Contact]
-    """    
-    return db.query(Contact).filter(Contact.user_id == user.id)
+    """  
+    return db.query(Contact).filter(Contact.user_id == user.id).all
 
 
 async def create_contact(body: ContactModel, db: Session, user: User) -> Contact:
@@ -59,7 +59,6 @@ async def get_contact(contact_id: int, db: Session, user: User) -> Contact:
     :rtype: Contact | None
     """    
     return db.query(Contact).filter(and_(Contact.id == contact_id, Contact.user_id == user.id)).first()
-
 
 
 async def update_contact(contact_id: int, body: ContactModel, db: Session, user: User) -> Contact:
@@ -123,7 +122,7 @@ async def get_contacts_with_name(name: str, db: Session, user: User) -> List[Con
     :return: Contacts with the specified name for a specific user.
     :rtype: List[Contact]
     """    
-    return db.query(Contact).filter(and_(Contact.firstname == name, Contact.user_id == user.id))
+    return db.query(Contact).filter(and_(Contact.firstname == name, Contact.user_id == user.id)).all
 
 
 async def get_contacts_with_lastname(lastname: str, db: Session, user: User) -> List[Contact]:
@@ -138,7 +137,7 @@ async def get_contacts_with_lastname(lastname: str, db: Session, user: User) -> 
     :return: Contacts with the specified lastname for a specific user.
     :rtype: List[Contact]
     """
-    return db.query(Contact).filter(and_(Contact.lastname == lastname, Contact.user_id == user.id))
+    return db.query(Contact).filter(and_(Contact.lastname == lastname, Contact.user_id == user.id)).all
 
 
 async def get_contacts_with_email(email: str, db: Session, user: User) -> List[Contact]:
@@ -153,7 +152,7 @@ async def get_contacts_with_email(email: str, db: Session, user: User) -> List[C
     :return: Contacts with the specified email for a specific user.
     :rtype: List[Contact]
     """    
-    return db.query(Contact).filter(and_(Contact.email == email, Contact.user_id == user.id))
+    return db.query(Contact).filter(and_(Contact.email == email, Contact.user_id == user.id)).all
 
 
 async def get_contacts_with_recent_birthdays(db: Session, user: User) -> List[Contact]:
@@ -166,7 +165,7 @@ async def get_contacts_with_recent_birthdays(db: Session, user: User) -> List[Co
     :return: contacts with recent birthdays for a specific user.
     :rtype: List[Contact]
     """    
-    return db.query(Contact).filter(and_(has_birthday_next_week(Contact.birthday), Contact.user_id == user.id))
+    return db.query(Contact).filter(and_(has_birthday_next_week(Contact.birthday), Contact.user_id == user.id)).all
 
 
 def has_birthday_next_week(birthday: date) -> bool:
@@ -174,7 +173,7 @@ def has_birthday_next_week(birthday: date) -> bool:
 
     :param birthday: Birthday to check.
     :type birthday: date
-    :return: True if birthday is in next 7 days or False if not.
+    :return: True if birthday is in next 7 days or False if
     :rtype: bool
     """
     current_age = func.date_part("year", func.age(birthday))

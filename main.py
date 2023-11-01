@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi_limiter import FastAPILimiter
 from fastapi.middleware.cors import CORSMiddleware
+import uvicorn
 
 import redis.asyncio as redis
 
@@ -45,3 +46,7 @@ def root():
     :rtype: dict
     """    
     return {"message": "Welcome to FastAPI!"}
+
+
+if __name__ == "__main__":
+    uvicorn.run("main:app", reload=True)
